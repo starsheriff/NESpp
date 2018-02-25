@@ -28,19 +28,15 @@ private:
 Cpu::Cpu() {
 };
 
-
 // todo:
 void Cpu::run() {
     std::cout << "cpu running\n";
 }
 
-class Rom {
-public:
-    Rom(char* filepath);
-};
-
 int main(int argc, char** argv) {
+    // instantiate the cpu
     Cpu cpu {};
 
+    // start the cpu
     cpu.run();
 }
