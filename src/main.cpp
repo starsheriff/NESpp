@@ -10,8 +10,8 @@ public:
 private:
     // special purpose registers
     // todo: type? 8bit or 16bit? -> char or short?
-    int stack_pointer;
     int program_counter;
+    int stack_pointer;
     int status_register;
 
     // general purpose registers
