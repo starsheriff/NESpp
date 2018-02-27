@@ -90,10 +90,25 @@ enum ProcessorStatus: char {
     InterruptDisable = 2,
     DecimalMode      = 4,
     BreakCommand     = 8,
-    // bit 5 is not used
-    OverflowFlag     = 32,
+    OverflowFlag_0   = 16,
+    OverflowFlag_1   = 32,
     NegativeFlag     = 64,
 };
+
+constexpr ProcessorStatus set_bit(ProcessorStatus a, ProcessorStatus b) {
+    auto aa = static_cast<int>(a);
+    auto bb = static_cast<int>(b);
+
+    return static_cast<ProcessorStatus>(aa | bb);
+}
+
+ProcessorStatus init_bits(std::initializer_list<ProcessorStatus> list) {
+    ProcessorStatus reg_p = static_cast<ProcessorStatus>(0);
+    for (auto p : list) {
+        reg_p = set_bit(reg_p, p);
+    }
+    return reg_p;
+}
 
 
 class Cpu {
@@ -101,7 +116,7 @@ public:
     Cpu();
     void run();
     void powerup();
-    void cold_reset();
+    void reset();
     int* ticks; // the input from the clock TODO: proper type
     void set_clk(std::condition_variable* c, std::mutex* m);
     std::condition_variable* cond;
@@ -125,12 +140,25 @@ Cpu::Cpu() {
 };
 
 void Cpu::powerup() {
-    // TODO: typesafer version
-    reg_p = static_cast<ProcessorStatus>(0x34);
+    reg_p = init_bits({
+                ProcessorStatus::InterruptDisable,
+                ProcessorStatus::BreakCommand,
+                ProcessorStatus::OverflowFlag_0,
+            });
 
     reg_x = 0;
     reg_y = 0;
+
     stack_pointer = 0xFD;
+
+    // TODO: memory
+}
+
+void Cpu::reset() {
+    // do nothing to registers A, X and Y
+    stack_pointer -= 3;
+
+    reg_p = set_bit(reg_p, ProcessorStatus::InterruptDisable);
 
     // TODO: memory
 }
