@@ -1,2 +1,2 @@
 all::
-	clang++ -Wall -std=c++11 -lpthread -o target/NESpp src/main.cpp
+	clang++ -Wall -std=c++14 -lpthread -o target/NESpp src/main.cpp
