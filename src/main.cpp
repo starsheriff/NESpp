@@ -6,6 +6,21 @@
 #include<thread>
 #include<list>
 
+enum class AddressingModes {
+    One,
+    Two,
+    Three,
+};
+
+class Memory{
+public:
+    Memory();
+    void write();
+    char read();
+private:
+    char* mem;
+};
+
 struct Wire {
     std::mutex m;
     std::condition_variable clk_sig{};
@@ -84,7 +99,7 @@ void Clock::count() {
 // N - Negative Flag
 //
 // This enum can be used as bit flags with bitwise operations.
-enum ProcessorStatus: char {
+enum class ProcessorStatus: char {
     CarryFlag        = 0,
     ZeroFlag         = 1,
     InterruptDisable = 2,
