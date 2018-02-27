@@ -95,11 +95,6 @@ private:
     // memory access
     void mem_write(MemoryAddress addr);
     char mem_read(MemoryAddress addr);
-
-    /// emulator specific (not part of the physical cpu)
-    // used to delay the processor for some cycles to account for the
-    // amount of required cycles for the instructions
-    char delay_cycles {0};
 };
 
 Cpu::Cpu() {
