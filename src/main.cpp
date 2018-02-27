@@ -8,21 +8,22 @@
 
 #include "clock.h"
 
-enum class AddressingModes {
+enum class AddressingMode {
     One,
     Two,
     Three,
 };
 
+struct MemoryAddress { unsigned int addr; };
+
 class Memory{
 public:
-    Memory();
-    void write();
-    char read();
+    Memory(int bytes);
+    void write(AddressingMode m, MemoryAddress addr);
+    char read(AddressingMode m, MemoryAddress addr);
 private:
-    char* mem;
+    std::vector<char> mem;
 };
-
 
 // 7 6 5 4 3 2 1 0
 // | | | | | | | |
@@ -78,6 +79,9 @@ public:
     Wire* clk_cpu;
 
 private:
+    const char clock_divider{12};
+    char clock_counter{0};
+
     // special purpose registers
     unsigned int program_counter;
     char stack_pointer;
@@ -87,6 +91,15 @@ private:
     char accumulator;     // 8-bit register
     char reg_x; // 8-bit register
     char reg_y; // 8-bit register
+
+    // memory access
+    void mem_write(MemoryAddress addr);
+    char mem_read(MemoryAddress addr);
+
+    /// emulator specific (not part of the physical cpu)
+    // used to delay the processor for some cycles to account for the
+    // amount of required cycles for the instructions
+    char delay_cycles {0};
 };
 
 Cpu::Cpu() {
@@ -135,9 +148,15 @@ int main(int argc, char** argv) {
 
     // instantiate the wire between cpu and clock
     Wire clk_out{};
+
     // connect the wire
     clk.sig_out = &clk_out;
     cpu.clk_cpu = &clk_out;
+
+    // instantiate and wire up memory
+    Memory mem{64*1024};
+    // or this?
+    std::vector<char> mem2(64*1024);
 
     // powerup
     cpu.powerup();
