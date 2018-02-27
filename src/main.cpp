@@ -14,22 +14,26 @@ struct Wire {
     Wire(): m{}, clk_sig{} {};
 };
 
+struct Frequency { double val; };
 
 class Clock {
 public:
-    Clock();
+    Clock(Frequency freq);
     ~Clock();
 
     void run(); // starts the clock
     Wire* sig_out;
 
 private:
+    long int period_ns;
     void count();
     std::thread t;
 };
 
 
-Clock::Clock() {
+Clock::Clock(Frequency freq) {
+    period_ns = 1.0/freq.val * 1e9;
+    std::cout << "clock period: " << period_ns << " ns\n";
 }
 
 Clock::~Clock() {
@@ -47,16 +51,20 @@ void Clock::count() {
         auto t1 = std::chrono::high_resolution_clock::now();
         while(true) {
             t1 = std::chrono::high_resolution_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(t1-t0);
-            if(elapsed.count() > 60000) {
+            auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0);
+            if(elapsed.count() > period_ns) {
                 std::cout << "break, elapsed: " << elapsed.count() << '\n';
                 break;
             } else {
-                std::this_thread::sleep_for(std::chrono::microseconds{60});
+                int sleep_for = (period_ns - elapsed.count())*0.5;
+                // only sleep longer than 10ms
+                if(sleep_for > 10000) {
+                    std::this_thread::sleep_for(std::chrono::nanoseconds{sleep_for});
+                }
             }
         }
 
-        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count()
+        std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count()
              << " nanoseconds passed\n";
 
         std::unique_lock<std::mutex> lck {sig_out->m};
@@ -111,7 +119,7 @@ void Cpu::run() {
 
 int main(int argc, char** argv) {
     // instantiate a new clock
-    Clock clk {};
+    Clock clk {Frequency{1}};
 
     // instantiate the cpu
     Cpu cpu {};
