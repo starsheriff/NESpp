@@ -119,7 +119,8 @@ void Cpu::run() {
 
 int main(int argc, char** argv) {
     // instantiate a new clock
-    Clock clk {Frequency{1}};
+    Clock clk {Frequency{1}}; // 1Hz
+    //Clock clk {Frequency{1.79e6}}; // NES frequency: 1.79 MHz
 
     // instantiate the cpu
     Cpu cpu {};
