@@ -53,7 +53,8 @@ void Clock::count() {
             t1 = std::chrono::high_resolution_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0);
             if(elapsed.count() > period_ns) {
-                std::cout << "break, elapsed: " << elapsed.count() << '\n';
+                std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count()
+                     << " nanoseconds passed\n";
                 break;
             } else {
                 int sleep_for = (period_ns - elapsed.count())*0.5;
@@ -64,20 +65,42 @@ void Clock::count() {
             }
         }
 
-        std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count()
-             << " nanoseconds passed\n";
 
         std::unique_lock<std::mutex> lck {sig_out->m};
         sig_out->clk_sig.notify_all();
     }
 }
 
+// 7 6 5 4 3 2 1 0
+// | | | | | | | |
+// N V   B D I Z C
+//
+// C - CarryFlag
+// Z - ZeroFlag
+// I - InterruptDisable
+// D - Decimal Mode
+// B - BreakCommand
+// V - Overflow Flag
+// N - Negative Flag
+//
+// This enum can be used as bit flags with bitwise operations.
+enum ProcessorStatus: char {
+    CarryFlag        = 0,
+    ZeroFlag         = 1,
+    InterruptDisable = 2,
+    DecimalMode      = 4,
+    BreakCommand     = 8,
+    // bit 5 is not used
+    OverflowFlag     = 32,
+    NegativeFlag     = 64,
+};
+
 
 class Cpu {
 public:
     Cpu();
     void run();
-    void hard_reset();
+    void powerup();
     void cold_reset();
     int* ticks; // the input from the clock TODO: proper type
     void set_clk(std::condition_variable* c, std::mutex* m);
@@ -88,25 +111,29 @@ public:
 
 private:
     // special purpose registers
-    // todo: type? 8bit or 16bit? -> char or short?
-    int program_counter;
-    int stack_pointer;
-    int status_register;
+    unsigned int program_counter;
+    char stack_pointer;
+    ProcessorStatus reg_p;
 
     // general purpose registers
     char accumulator;     // 8-bit register
-    char index_register_x; // 8-bit register
-    char index_register_y; // 8-bit register
-
-    // processor status
-    // number of single bit flags --> model as enum?
-    // todo: bitfields -> p. 12 in NESDoc
-    char processor_status;
-
+    char reg_x; // 8-bit register
+    char reg_y; // 8-bit register
 };
 
 Cpu::Cpu() {
 };
+
+void Cpu::powerup() {
+    // TODO: typesafer version
+    reg_p = static_cast<ProcessorStatus>(0x34);
+
+    reg_x = 0;
+    reg_y = 0;
+    stack_pointer = 0xFD;
+
+    // TODO: memory
+}
 
 // todo:
 void Cpu::run() {
@@ -130,6 +157,9 @@ int main(int argc, char** argv) {
     // connect the wire
     clk.sig_out = &clk_out;
     cpu.clk_cpu = &clk_out;
+
+    // powerup
+    cpu.powerup();
 
     // start the clock and cpu
     clk.run();
