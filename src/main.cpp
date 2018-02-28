@@ -19,11 +19,23 @@ struct MemoryAddress { unsigned int addr; };
 class Memory{
 public:
     Memory(int bytes);
-    void write(AddressingMode m, MemoryAddress addr);
-    char read(AddressingMode m, MemoryAddress addr);
+    void write(MemoryAddress addr, char val);
+    char read(MemoryAddress addr);
 private:
     std::vector<char> mem;
 };
+
+Memory::Memory(int bytes) {
+    mem = std::vector<char>(bytes);
+}
+
+char Memory::read(MemoryAddress m) {
+    return mem[m.addr];
+}
+
+void Memory::write(MemoryAddress m, char val) {
+    mem[m.addr] = val;
+}
 
 // 7 6 5 4 3 2 1 0
 // | | | | | | | |
@@ -77,6 +89,9 @@ public:
 
     // clk input
     Wire* clk_cpu;
+
+    // memory
+    Memory* mem;
 
 private:
     const char clock_divider{12};
@@ -150,8 +165,7 @@ int main(int argc, char** argv) {
 
     // instantiate and wire up memory
     Memory mem{64*1024};
-    // or this?
-    std::vector<char> mem2(64*1024);
+    cpu.mem = &mem; // TODO: setter?
 
     // powerup
     cpu.powerup();
