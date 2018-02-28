@@ -127,7 +127,9 @@ void Cpu::powerup() {
 
     stack_pointer = 0xFD;
 
-    // TODO: memory
+    // memory
+    mem->write(MemoryAddress{0x4017}, 0x00); // disable all channels
+    mem->write(MemoryAddress{0x4015}, 0x00); // silence APU
 }
 
 void Cpu::reset() {
@@ -136,7 +138,8 @@ void Cpu::reset() {
 
     reg_p = set_bit(reg_p, ProcessorStatus::InterruptDisable);
 
-    // TODO: memory
+    // memory
+    mem->write(MemoryAddress{0x4015}, 0x00); // silence APU
 }
 
 // todo:
