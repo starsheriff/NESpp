@@ -9,21 +9,6 @@
 
 #include "clock.h"
 
-class Clock {
-public:
-    Clock(Frequency freq);
-    ~Clock();
-
-    void run(); // starts the clock
-    Wire* sig_out;
-
-private:
-    long int period_ns;
-    void count();
-    std::thread t;
-};
-
-
 Clock::Clock(Frequency freq) {
     period_ns = 1.0/freq.val * 1e9;
     std::cout << "clock period: " << period_ns << " ns\n";
