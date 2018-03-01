@@ -77,6 +77,18 @@ ProcessorStatus init_bits(std::initializer_list<ProcessorStatus> list) {
 }
 
 
+//struct OptCode { char val; };
+
+enum class OptCodes : char {
+    AAA = 0x00,
+};
+
+enum class Instruction {
+    AAA,
+};
+
+
+
 class Cpu {
 public:
     Cpu();
@@ -148,6 +160,7 @@ void Cpu::run() {
         std::unique_lock<std::mutex> lck{clk_cpu->m};
         clk_cpu->clk_sig.wait(lck);
         std::cout << "cpu cycle...\n";
+
     }
 }
 
