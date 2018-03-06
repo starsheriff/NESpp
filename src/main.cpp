@@ -83,10 +83,15 @@ enum class OptCodes : char {
     AAA = 0x00,
 };
 
-enum class Instruction {
-    AAA,
-};
+//enum class Instruction {
+    //AAA,
+//};
 
+struct Instruction {
+    char optcode;
+    char n_bytes;
+    char n_cycles;
+};
 
 
 class Cpu {
@@ -122,6 +127,9 @@ private:
     // memory access
     void mem_write(MemoryAddress addr);
     char mem_read(MemoryAddress addr);
+
+    // instructions
+    void exec_ADC();
 };
 
 Cpu::Cpu() {
@@ -161,8 +169,19 @@ void Cpu::run() {
         clk_cpu->clk_sig.wait(lck);
         std::cout << "cpu cycle...\n";
 
+        char optcode = 0xdd;
+        switch(optcode) {
+            case 0xdd:
+                break;
+            default:
+                break;
+        }
+
     }
 }
+
+void Cpu::exec_ADC() {
+};
 
 int main(int argc, char** argv) {
     // instantiate a new clock
